@@ -1,4 +1,4 @@
-source("usefullTools.r")
+source("../tools/usefullTools.r")
 
 # {{{ SIMU_SYMBOL
 stroke <-function(x0=-1,y0=-1,x1=1,y1=1,N=10)
@@ -86,57 +86,156 @@ prettyPrintImg <- function(imgData) {
 # }}}
 
 # {{{ VISUALIZE_DATA
-visualizeData <- function(t) {
+visualizeData <- function(t, nr=5, nc=3) {
    for(i in 1:dim(t)[1]) {
-      img <- constuctImg(t[i,])
+      img <- constuctImg(t[i,], nr, nc)
       prettyPrintImg(img)
       density <- createDensity(img)
       cat(density$nNon0PerRows)
+      zeroLeft <- createSoundLeft(img)
+      cat("\n", zeroLeft$nZeroLeft)
+      zeroRight <- createSoundRight(img)
+      cat("\n", zeroRight$nZeroRight)
+      zeroTop <- createSoundTop(img)
+      cat("\n", zeroTop$nZeroTop)
+      zeroBottom <- createSoundBottom(img)
+      cat("\n", zeroBottom$nZeroBottom)
+      cat("\n\n")
    }
 }
 # }}}
 
 # {{{ CREATE_DENSITY
 createDensity <- function(img) {
+   # binarise the img
    binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
+   # make a vector with the sum of each binarised line
    nbNon0PerRows <- matrix(rowSums(binarised), ncol=1)
-      
-   for(i in 1:dim(img)[1]) {
-      if (i == 1) {
-         tmp <- matrix(0, dim(img)[1], ncol=1)
-      }
-      tmp <- tmp + nbNon0PerRows
-   }
-   bigSum <- sum(tmp)
-   tmp <- unlist(Map(function(x) { x/bigSum }, tmp))
+   # sum all 
+   bigSum <- sum(nbNon0PerRows)
+   # normalize
+   tmp <- unlist(Map(function(x) { x/bigSum }, nbNon0PerRows))
    return(list(nNon0PerRows=tmp))
 }
 # }}}
 
 # {{{ CREATE_SOUND_LEFT
 createSoundLeft <- function(img) {
-   past <- F
+   # binarise the img
    binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
-   nb0Left <- matrix(rowSums(), ncol=1)
-      
-   for(i in 1:dim(img)[1]) {
-      if (i == 1) {
-         tmp <- matrix(0, dim(img)[1], ncol=1)
+   # make an empty vector
+   tmp <- c()
+   for (i in 1:dim(binarised)[1]) {
+      # init count at 0
+      nb <- 0
+      # init past to False
+      past <- F
+      for (j in 1:length(binarised[1,])) {
+         if (binarised[i,j] == 0 && !past) {
+            nb <- nb+1
+         }
+         else {
+            past <- T
+         }
       }
-      tmp <- tmp + nbNon0PerRows
+      tmp <- c(tmp, nb)
    }
+   # sum the vector 
    bigSum <- sum(tmp)
-   tmp <- unlist(Map(function(x) { x/bigSum }, tmp))
-   return(list(nNon0PerRows=tmp))
+   # normalize
+   tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
+   return(list(nZeroLeft=tmp))
 }
 # }}}
 
-sim <- simu_symbol()
-test <- compute_symbol(sim$d6, 7, 5)
-test
+# {{{ CREATE_SOUND_RIGHT
+createSoundRight <- function(img) {
+   # binarise the img
+   binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
+   # make an empty vector
+   tmp <- c()
+   for (i in 1:dim(binarised)[1]) {
+      # init count at 0
+      nb <- 0
+      for (j in 1:length(binarised[1,])) {
+         if (binarised[i,j] == 0) {
+            nb <- nb+1
+         }
+         else {
+            nb <- 0
+         }
+      }
+      tmp <- c(tmp, nb)
+   }
+   # sum the vector 
+   bigSum <- sum(tmp)
+   # normalize
+   tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
+   return(list(nZeroRight=tmp))
+}
+# }}}
 
-lut <- constuctImg(test, 7, 5)
-prettyPrintImg(lut)
+# {{{ CREATE_SOUND_TOP
+createSoundTop <- function(img) {
+   # binarise the img
+   binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
+   # make an empty vector
+   tmp <- c()
+   for (i in 1:dim(binarised)[2]) {
+      # init count at 0
+      nb <- 0
+      past <- F
+      for (j in 1:dim(binarised)[1]) {
+         if (binarised[j,i] == 0 && !past) {
+            nb <- nb+1
+         }
+         else {
+            past <- T
+         }
+      }
+      tmp <- c(tmp, nb)
+   }
+   # sum the vector 
+   bigSum <- sum(tmp)
+   # normalize
+   tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
+   return(list(nZeroTop=tmp))
+}
+# }}}
+
+# {{{ CREATE_SOUND_BOTTOM
+createSoundBottom <- function(img) {
+   # binarise the img
+   binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
+   # make an empty vector
+   tmp <- c()
+   for (i in 1:dim(binarised)[2]) {
+      # init count at 0
+      nb <- 0
+      for (j in 1:dim(binarised)[1]) {
+         if (binarised[j,i] == 0) {
+            nb <- nb+1
+         }
+         else {
+            nb <- 0
+         }
+      }
+      tmp <- c(tmp, nb)
+   }
+   # sum the vector 
+   bigSum <- sum(tmp)
+   # normalize
+   tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
+   return(list(nZeroBottom=tmp))
+}
+# }}}
+
+#sim <- simu_symbol()
+#test <- compute_symbol(sim$d6, 7, 5)
+#test
+#
+#lut <- constuctImg(test, 7, 5)
+#prettyPrintImg(lut)
 #
 #features <- createFeatures(lut)$nNon0PerRows
 #features
@@ -144,24 +243,24 @@ prettyPrintImg(lut)
 #testdir <- compute_symbol_dir(sim$d1)
 #testdir
 
-#table0 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit0.txt")
-#visualizeData(table0)
-#table1 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit1.txt")
-#visualizeData(table1)
-#table2 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit2.txt")
-#visualizeData(table2)
-#table3 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit3.txt")
-#visualizeData(table3)
-#table4 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit4.txt")
-#visualizeData(table4)
-#table5 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit5.txt")
-#visualizeData(table5)
-#table6 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit6.txt")
-#visualizeData(table6)
-#table7 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit7.txt")
-#visualizeData(table7)
-#table8 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit8.txt")
-#visualizeData(table8)
-#table9 <- Load_Obs("../data/Data5X3/Test_compute_symbol_5_3Digit9.txt")
-#visualizeData(table9)
+table0 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit0.txt")
+visualizeData(table0, 7, 5)
+table1 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit1.txt")
+visualizeData(table1, 7, 5)
+table2 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit2.txt")
+visualizeData(table2, 7, 5)
+table3 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit3.txt")
+visualizeData(table3, 7, 5)
+table4 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit4.txt")
+visualizeData(table4, 7, 5)
+table5 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit5.txt")
+visualizeData(table5, 7, 5)
+table6 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit6.txt")
+visualizeData(table6, 7, 5)
+table7 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit7.txt")
+visualizeData(table7, 7, 5)
+table8 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit8.txt")
+visualizeData(table8, 7, 5)
+table9 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit9.txt")
+visualizeData(table9, 7, 5)
 
