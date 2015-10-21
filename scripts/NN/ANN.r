@@ -1,4 +1,5 @@
 source("../tools/usefullTools.r")
+library("nnet")
 
 # {{{ SIMU_SYMBOL
 stroke <-function(x0=-1,y0=-1,x1=1,y1=1,N=10)
@@ -56,8 +57,6 @@ compute_symbol_dir <- function (trace,nangle=8)
 # }}}
 
 # {{{ CONSTRUCT_IMG
-rotate <- function(m) t(apply(m, 2, rev))
-
 constuctImg <- function(seq, nr=5, nc=3) {
    lut <- t(matrix(0, nrow=nr, ncol=nc, byrow=T))
    for(i in seq) {
@@ -115,7 +114,7 @@ createDensity <- function(img) {
    bigSum <- sum(nbNon0PerRows)
    # normalize
    tmp <- unlist(Map(function(x) { x/bigSum }, nbNon0PerRows))
-   return(list(nNon0PerRows=tmp))
+   return(tmp)
 }
 # }}}
 
@@ -144,7 +143,7 @@ createSoundLeft <- function(img) {
    bigSum <- sum(tmp)
    # normalize
    tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
-   return(list(nZeroLeft=tmp))
+   return(tmp)
 }
 # }}}
 
@@ -171,7 +170,7 @@ createSoundRight <- function(img) {
    bigSum <- sum(tmp)
    # normalize
    tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
-   return(list(nZeroRight=tmp))
+   return(tmp)
 }
 # }}}
 
@@ -199,7 +198,7 @@ createSoundTop <- function(img) {
    bigSum <- sum(tmp)
    # normalize
    tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
-   return(list(nZeroTop=tmp))
+   return(tmp)
 }
 # }}}
 
@@ -226,9 +225,142 @@ createSoundBottom <- function(img) {
    bigSum <- sum(tmp)
    # normalize
    tmp <- unlist(Map(function(x) { x/ifelse(bigSum == 0, 1, bigSum) }, tmp))
-   return(list(nZeroBottom=tmp))
+   return(tmp)
 }
 # }}}
+
+# {{{ CREATE_FEATURES
+createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T) {
+   res <- c()
+   len <- 0
+   for(i in 1:dim(tab)[1]) {
+      img <- constuctImg(tab[i,], nr, nc)
+
+      df <- c()
+      if (d) { df <- createDensity(img) }
+
+      l <- c() 
+      if (sl) { l <- createSoundLeft(img) }
+
+      r <- c()  
+      if (sr) { r <- createSoundRight(img) }
+
+      t <- c()  
+      if (st) { t <- createSoundTop(img) }
+
+      b <- c(sb)  
+      if (sb) { b <- createSoundBottom(img) }
+
+      concat <- c(df,l,r,t,b)
+      len <- length(concat)
+
+      res <- c(res, concat)
+   }
+   return(matrix(res, ncol=len, byrow=T))
+}
+# }}}
+
+# {{{ USEFULL_FUNCTIONS_TO_COMPUTE_RESULTS
+# computes confusion matrix
+test.cl <- function(true, pred) {
+   true <- max.col(true)
+   res <- max.col(pred)
+   return (table(true, res))
+}
+
+# computes recognition rates
+test.reco <- function(true, pred) {
+   true <- max.col(true)
+   res <- max.col(pred)
+   return (as.numeric(sum(true == res)))
+}
+
+#compute the MSE
+test.mse <- function(true, pred) {
+   diff <- true - pred
+   sqred <- diff * diff
+   return (sum(sqred) / length(sqred))
+}
+# }}}
+
+# {{{ LEARN_VAL(NR, NC, TRAINID, VALID, NBN, MAXIT, NBLOOP)
+learn.val <- function (nr, nc, trainId, valId, nbN, maxIt, nbLoop){
+   table0 <- Load_Obs(paste("../../data/Data",
+                            nr,
+                            "X",
+                            nc,
+                            "/Train_compute_symbol_",
+                            nr,
+                            "_",
+                            nc,
+                            "Digit0.txt", sep=""))
+   dataTarg <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table0)[1]),
+                                ncol=10, 
+                                byrow=T))
+   dataFt <- createFeatures(table0)
+   #init a new random MLP
+   new_nn <- nnet(dataFt[trainId,], dataTarg[trainId,], size=nbN, maxit=0,
+                  decay=1e-4,rang = 1)
+   best_nn = new_nn
+   curr_w <- new_nn$wts
+   # compute initial rates / mse and save them
+   currTrRate <- test.reco(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+   currTrRateVal <- test.reco(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+   currTrMSE <- test.mse(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+   currTrMSEVal <- test.mse(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+   scoresT <- c(currTrRate/length(trainId))
+   scoresV <- c(currTrRateVal/length(valId))
+   mseT <- c(currTrMSE)
+   mseV <- c(currTrMSEVal)
+   iterations <- c(0)
+   bestRate <- currTrRateVal 
+   bestIt <- 0
+   for(k in 1:9) {
+      table <- Load_Obs(paste("../../data/Data",
+                              nr,
+                              "X",
+                              nc,
+                              "/Train_compute_symbol_",
+                              nr,
+                              "_",
+                              nc,
+                              "Digit",
+                              k,
+                              ".txt", sep=""))
+      dataFt <- createFeatures(table)
+      cat("Starting Reco rate = ",currTrRate,"\n")
+      for(i in 1:nbLoop){
+         cat("\r", i," / ", nbLoop)
+         #continue the training
+         new_nn <- nnet(dataFt[trainId,], dataTarg[(k+1)*trainId,], size=nbN, maxit=maxIt, decay=1e-4,rang = 1, Wts=curr_w)
+         curr_w <- new_nn$wts
+         #compute the rates/MSE
+         currTrRate <- test.reco(dataTarg[(k+1)*trainId,], predict(new_nn, dataFt[trainId,]))
+         currTrRateVal <- test.reco(dataTarg[(k+1)*valId,], predict(new_nn, dataFt[valId,]))
+         currTrMSE <- test.mse(dataTarg[(k+1)*trainId,], predict(new_nn, dataFt[trainId,]))
+         currTrMSEVal <- test.mse(dataTarg[(k+1)*valId,], predict(new_nn, dataFt[valId,]))
+
+         #save values to plot
+         scoresT <- c(scoresT,currTrRate/length(trainId))
+         scoresV <- c(scoresV,currTrRateVal/length(valId))
+         mseT <- c(mseT,currTrMSE)
+         mseV <- c(mseV,currTrMSEVal)
+         iterations <- c(iterations, i * maxIt)
+         #save if best
+         if(currTrRateVal > bestRate){
+            bestRate <- currTrRateVal
+            best_nn <- new_nn
+            bestIt <- maxIt * i
+         }
+      }
+   }
+   cat("\n")
+   return (list(nn = best_nn, nbIt=bestIt, scoreTrain = scoresT,
+                scoreVal = scoresV, it=iterations, mseT=mseT,mseV=mseV))
+}
+# }}}
+
+
 
 #sim <- simu_symbol()
 #test <- compute_symbol(sim$d6, 7, 5)
@@ -240,27 +372,49 @@ createSoundBottom <- function(img) {
 #features <- createFeatures(lut)$nNon0PerRows
 #features
 
+
+
 #testdir <- compute_symbol_dir(sim$d1)
 #testdir
 
-table0 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit0.txt")
-visualizeData(table0, 7, 5)
-table1 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit1.txt")
-visualizeData(table1, 7, 5)
-table2 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit2.txt")
-visualizeData(table2, 7, 5)
-table3 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit3.txt")
-visualizeData(table3, 7, 5)
-table4 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit4.txt")
-visualizeData(table4, 7, 5)
-table5 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit5.txt")
-visualizeData(table5, 7, 5)
-table6 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit6.txt")
-visualizeData(table6, 7, 5)
-table7 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit7.txt")
-visualizeData(table7, 7, 5)
-table8 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit8.txt")
-visualizeData(table8, 7, 5)
-table9 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit9.txt")
-visualizeData(table9, 7, 5)
+table <- Load_Obs("../../data/Data5X3/Test_compute_symbol_5_3Digit4.txt")
+#visualizeData(table0, 7, 5)
+
+
+#dataTarg <- class.ind(matrix(rep(c(0), dim(table0)[1]), ncol=1))
+#dataFt <- createFeatures(table0)
+res <- learn.val(5, 3, 1:140, 141:180, 25, 100, 20)
+
+nndigit <- res$nn
+for(i in 1:10) {
+   predict(nndigit, table[i,])
+}
+#par(fg = "black")
+#plot(res$it, res$scoreTrain, type = "l")
+#par(fg = "red")
+#lines(res$it, res$scoreVal, type = "l")
+#
+#par(fg = "black")
+#plot(res$it, res$mseT, type = "l")
+#par(fg = "red")
+#lines(res$it, res$mseV, type = "l")
+
+#table1 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit1.txt")
+#visualizeData(table1, 7, 5)
+#table2 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit2.txt")
+#visualizeData(table2, 7, 5)
+#table3 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit3.txt")
+#visualizeData(table3, 7, 5)
+#table4 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit4.txt")
+#visualizeData(table4, 7, 5)
+#table5 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit5.txt")
+#visualizeData(table5, 7, 5)
+#table6 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit6.txt")
+#visualizeData(table6, 7, 5)
+#table7 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit7.txt")
+#visualizeData(table7, 7, 5)
+#table8 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit8.txt")
+#visualizeData(table8, 7, 5)
+#table9 <- Load_Obs("../../data/Data7X5/Test_compute_symbol_7_5Digit9.txt")
+#visualizeData(table9, 7, 5)
 
