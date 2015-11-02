@@ -634,3 +634,4 @@ t8 <- classify(test8, nndigit, 8, t7$somme, t7$total, sr=F, st=F, sb=F)
 t9 <- classify(test9, nndigit, 9, t8$somme, t8$total, sr=F, st=F, sb=F)
 cat("res: ", t9$somme, "/", t9$total, "\n")
 cat("precision: ", (t9$somme/t9$total)*100, "%\n")
+
