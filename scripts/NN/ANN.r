@@ -262,7 +262,7 @@ createMeanC <- function(img) {
 }
 # }}}
 
-# {{{ CREATE_FEATURES(TAB, NR, NC, D, SL, SR, ST, SB, MR)
+# {{{ CREATE_FEATURES(TAB, NR, NC, D, SL, SR, ST, SB, MR, MC)
 createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    res <- c()
    len <- 0
@@ -283,7 +283,7 @@ createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, m
 
       b <- c()  
       if (sb) { b <- createSoundBottom(img) }
-      
+
       mR <- c()
       if (mr) { mR <- createMeanR(img) }
 
@@ -296,6 +296,36 @@ createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, m
       res <- c(res, concat)
    }
    return(matrix(res, ncol=len, byrow=T))
+}
+# }}}
+
+# {{{ CREATE_FEATURES_2(TAB, NR, NC, D, SL, SR, ST, SB, MR, MC)
+createFeatures2 <- function(l, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
+   img <- constructImg(l, nr, nc)
+
+   df <- c()
+   if (d) { df <- createDensity(img) }
+
+   l <- c() 
+   if (sl) { l <- createSoundLeft(img) }
+
+   r <- c()  
+   if (sr) { r <- createSoundRight(img) }
+
+   t <- c()  
+   if (st) { t <- createSoundTop(img) }
+
+   b <- c()  
+   if (sb) { b <- createSoundBottom(img) }
+
+   mR <- c()
+   if (mr) { mR <- createMeanR(img) }
+
+   mC <- c()
+   if (mc) { mC <- createMeanC(img) }
+
+   concat <- c(df,l,r,t,b,mR,mC)
+   return(concat)
 }
 # }}}
 
@@ -324,51 +354,51 @@ test.mse <- function(true, pred) {
 
 # {{{ LEARN_VAL(DATAFT, DATATARG, TRAINID, VALID, NBN, MAXIT, NBLOOP)
 learn.val <- function (dataFt, dataTarg, trainId, valId, nbN, maxIt, nbLoop){
-  #init a new random MLP
-  new_nn <- nnet(dataFt[trainId,], dataTarg[trainId,], size=nbN, maxit=0,
-                 decay=1e-4,rang = 1, trace=FALSE)
-  best_nn = new_nn
-  curr_w <- new_nn$wts
-  # compute initial rates / mse and save them
-  currTrRate <- test.reco(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
-  currTrRateVal <- test.reco(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
-  currTrMSE <- test.mse(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
-  currTrMSEVal <- test.mse(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
-  scoresT <- c(currTrRate/length(trainId))
-  scoresV <- c(currTrRateVal/length(valId))
-  mseT <- c(currTrMSE)
-  mseV <- c(currTrMSEVal)
-  iterations <- c(0)
-  bestRate <- currTrRateVal 
-  bestIt <- 0
-  cat("Starting Reco rate = ",currTrRate,"\n")
-  for(i in 1:nbLoop){
-    cat("\r", i," / ", nbLoop)
-    #continue the training
-    new_nn <- nnet(dataFt[trainId,], dataTarg[trainId,], size=nbN, maxit=maxIt, decay=1e-4,rang = 1, Wts=curr_w, trace=FALSE)
-    curr_w <- new_nn$wts
-    #compute the rates/MSE
-    currTrRate <- test.reco(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
-    currTrRateVal <- test.reco(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
-    currTrMSE <- test.mse(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
-    currTrMSEVal <- test.mse(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
-    
-    #save values to plot
-    scoresT <- c(scoresT,currTrRate/length(trainId))
-    scoresV <- c(scoresV,currTrRateVal/length(valId))
-    mseT <- c(mseT,currTrMSE)
-    mseV <- c(mseV,currTrMSEVal)
-    iterations <- c(iterations, i * maxIt)
-    #save if best
-    if(currTrRateVal > bestRate){
-      bestRate <- currTrRateVal
-      best_nn <- new_nn
-      bestIt <- maxIt * i
-    }
-  }
-  cat("\n")
-  return (list(nn = best_nn, nbIt=bestIt, scoreTrain = scoresT,
-               scoreVal = scoresV, it=iterations, mseT=mseT,mseV=mseV))
+   #init a new random MLP
+   new_nn <- nnet(dataFt[trainId,], dataTarg[trainId,], size=nbN, maxit=0,
+                  decay=1e-4,rang = 1, trace=FALSE)
+   best_nn = new_nn
+   curr_w <- new_nn$wts
+   # compute initial rates / mse and save them
+   currTrRate <- test.reco(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+   currTrRateVal <- test.reco(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+   currTrMSE <- test.mse(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+   currTrMSEVal <- test.mse(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+   scoresT <- c(currTrRate/length(trainId))
+   scoresV <- c(currTrRateVal/length(valId))
+   mseT <- c(currTrMSE)
+   mseV <- c(currTrMSEVal)
+   iterations <- c(0)
+   bestRate <- currTrRateVal 
+   bestIt <- 0
+   cat("Starting Reco rate = ",currTrRate,"\n")
+   for(i in 1:nbLoop){
+      cat("\r", i," / ", nbLoop)
+      #continue the training
+      new_nn <- nnet(dataFt[trainId,], dataTarg[trainId,], size=nbN, maxit=maxIt, decay=1e-4,rang = 1, Wts=curr_w, trace=FALSE)
+      curr_w <- new_nn$wts
+      #compute the rates/MSE
+      currTrRate <- test.reco(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+      currTrRateVal <- test.reco(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+      currTrMSE <- test.mse(dataTarg[trainId,], predict(new_nn, dataFt[trainId,]))
+      currTrMSEVal <- test.mse(dataTarg[valId,], predict(new_nn, dataFt[valId,]))
+
+      #save values to plot
+      scoresT <- c(scoresT,currTrRate/length(trainId))
+      scoresV <- c(scoresV,currTrRateVal/length(valId))
+      mseT <- c(mseT,currTrMSE)
+      mseV <- c(mseV,currTrMSEVal)
+      iterations <- c(iterations, i * maxIt)
+      #save if best
+      if(currTrRateVal > bestRate){
+         bestRate <- currTrRateVal
+         best_nn <- new_nn
+         bestIt <- maxIt * i
+      }
+   }
+   cat("\n")
+   return (list(nn = best_nn, nbIt=bestIt, scoreTrain = scoresT,
+                scoreVal = scoresV, it=iterations, mseT=mseT,mseV=mseV))
 }
 # }}}
 
@@ -399,8 +429,8 @@ learn.cross  <- function(dataFt, dataTarg, nbN, maxIt, nbLoop, fold, sizeOfFold)
 }
 # }}}
 
-# {{{ LOAD_DATAS(NR, NC, PRINTDATA)
-loadDatas <- function(nr=5, nc=3, printdata=F) {
+# {{{ LOAD_DATAS(NR, NC, PRINTDATA, SIZE)
+loadDatas <- function(nr=5, nc=3, printdata=F, size=150, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    table0 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Train_compute_symbol_",nr,"_",nc,"Digit0.txt", sep=""))
    table1 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Train_compute_symbol_",nr,"_",nc,"Digit1.txt", sep=""))
    table2 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Train_compute_symbol_",nr,"_",nc,"Digit2.txt", sep=""))
@@ -425,16 +455,30 @@ loadDatas <- function(nr=5, nc=3, printdata=F) {
       visualizeData(table9, nr, nc)
    }
 
-   f0 <- createFeatures(table0, d=F)
-   f1 <- createFeatures(table1, d=F)
-   f2 <- createFeatures(table2, d=F)
-   f3 <- createFeatures(table3, d=F)
-   f4 <- createFeatures(table4, d=F)
-   f5 <- createFeatures(table5, d=F)
-   f6 <- createFeatures(table6, d=F)
-   f7 <- createFeatures(table7, d=F)
-   f8 <- createFeatures(table8, d=F)
-   f9 <- createFeatures(table9, d=F)
+   f0 <- createFeatures(table0, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f1 <- createFeatures(table1, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f2 <- createFeatures(table2, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f3 <- createFeatures(table3, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f4 <- createFeatures(table4, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f5 <- createFeatures(table5, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f6 <- createFeatures(table6, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f7 <- createFeatures(table7, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f8 <- createFeatures(table8, nr, nc, d, sl, sr, st, sb, mr, mc)
+   f9 <- createFeatures(table9, nr, nc, d, sl, sr, st, sb, mr, mc)
+
+   id0 <- sample(dim(f0)[1], size)
+   id1 <- sample(dim(f1)[1], size) + dim(f0)[1]
+   id2 <- sample(dim(f2)[1], size) + dim(f0)[1] + dim(f1)[1]
+   id3 <- sample(dim(f3)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1]
+   id4 <- sample(dim(f4)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1]
+   id5 <- sample(dim(f5)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1] + dim(f4)[1]
+   id6 <- sample(dim(f6)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1] + dim(f4)[1] + dim(f5)[1]
+   id7 <- sample(dim(f7)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1] + dim(f4)[1] + dim(f5)[1] + dim(f6)[1]
+   id8 <- sample(dim(f8)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1] + dim(f4)[1] + dim(f5)[1] + dim(f6)[1] + dim(f7)[1]
+   id9 <- sample(dim(f9)[1], size) + dim(f0)[1] + dim(f1)[1] + dim(f2)[1] + dim(f3)[1] + dim(f4)[1] + dim(f5)[1] + dim(f6)[1] + dim(f7)[1] + dim(f8)[1]
+
+   trainId <- sort(c(id0, id1, id2, id3, id4, id5, id6, id7, id8, id9))
+   validId <- -trainId
 
    targs0 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table0)[1]),
                               ncol=10, byrow=T))[1:dim(table0)[1],]
@@ -465,11 +509,59 @@ loadDatas <- function(nr=5, nc=3, printdata=F) {
 
    targs9 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table9)[1])
                               , ncol=10, byrow=T))[(1+9*dim(table9)[1]):(10*dim(table9)[1]),]
-  
+
    allset <- rbind(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9)
    alltargs <- rbind(targs0, targs1, targs2, targs3, targs4, targs5, targs6, targs7, targs8, targs9)
 
-   return(list(allDataSet=allset, allTargSet=alltargs))
+   return(list(allDataSet=allset, allTargSet=alltargs, trainId=trainId, validId=validId))
+}
+# }}}
+
+# {{{ CLASSIFY(DATA, NN, DIGIT, SOMME, TOTAL, NR, NC, ...)
+classify <- function(data, nn, digit, somme=0, total=0, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
+   for (i in 1:dim(data)[1]) {
+      fts <- createFeatures2(data[i,], nr, nc, d, sl, sr, st, sb, mr, mc)
+      l <- predict(nn, fts)
+      
+      check <- c()
+      if (digit == 0) {
+         check <- c(1,0,0,0,0,0,0,0,0,0)
+      }
+      else if (digit == 1) {
+         check <- c(0,1,0,0,0,0,0,0,0,0)
+      }
+      else if (digit == 2) {
+         check <- c(0,0,1,0,0,0,0,0,0,0)
+      }
+      else if (digit == 3) {
+         check <- c(0,0,0,1,0,0,0,0,0,0)
+      }
+      else if (digit == 4) {
+         check <- c(0,0,0,0,1,0,0,0,0,0)
+      }
+      else if (digit == 5) {
+         check <- c(0,0,0,0,0,1,0,0,0,0)
+      }
+      else if (digit == 6) {
+         check <- c(0,0,0,0,0,0,1,0,0,0)
+      }
+      else if (digit == 7) {
+         check <- c(0,0,0,0,0,0,0,1,0,0)
+      }
+      else if (digit == 8) {
+         check <- c(0,0,0,0,0,0,0,0,1,0)
+      }
+      else if (digit == 9) {
+         check <- c(0,0,0,0,0,0,0,0,0,1)
+      }
+
+      toCheck <- sapply(l, function(x) { ifelse(x==max(l),1,0) })
+      test <- sum(toCheck == check) == 10
+      if(test)
+         somme <- somme + 1
+      total <- total + 1
+   }
+   return(list(somme=somme, total=total))
 }
 # }}}
 
@@ -491,17 +583,17 @@ loadDatas <- function(nr=5, nc=3, printdata=F) {
 
 
 
-sets <- loadDatas()
+sets <- loadDatas(sr=F, st=F, sb=F)
 dataSets <- sets$allDataSet
 targSets <- sets$allTargSet
 
 dim(dataSets)
 dim(targSets)
 
-trainId <- sort(sample(dim(dataSets)[1], dim(dataSets)[1]/2))
-validId <- -trainId
+trainId <- sets$trainId
+validId <- sets$validId
 
-res <- learn.val(dataSets, targSets, trainId, validId, 25, 100, 20)
+res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
 nndigit <- res$nn
 
 test0 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit0.txt")
@@ -516,32 +608,29 @@ test8 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit8.txt")
 test9 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit9.txt")
 
 # cross validation
-meansT <- c()
-meansV <- c()
-tmp <- 23:28
-for( i in tmp) {
-   cat(" ########################### ", i, " #######################\n")
-   res <- learn.cross(dataSets, targSets, i, 40, 20, 10, 724)
-   meansT <- c(meansT, res$meanScoreT)
-   meansV <- c(meansV, res$meanScoreV)
-}
-par(fg = "black")
-plot(tmp, meansV, type = "l")
-par(fg = "red")
-plot(tmp, meansT, type = "l")
-
-#for(i in 1:10) {
-#   predict(nndigit, table[i,])
+#meansT <- c()
+#meansV <- c()
+#tmp <- 23:28
+#for( i in tmp) {
+#   cat(" ########################### ", i, " #######################\n")
+#   res <- learn.cross(dataSets, targSets, i, 40, 20, 10, 724)
+#   meansT <- c(meansT, res$meanScoreT)
+#   meansV <- c(meansV, res$meanScoreV)
 #}
 #par(fg = "black")
-#plot(res$it, res$scoreTrain, type = "l")
+#plot(tmp, meansV, type = "l")
 #par(fg = "red")
-#lines(res$it, res$scoreVal, type = "l")
-#
-#par(fg = "black")
-#plot(res$it, res$mseT, type = "l")
-#par(fg = "red")
-#lines(res$it, res$mseV, type = "l")
+#plot(tmp, meansT, type = "l")
 
-
-
+t0 <- classify(test0, nndigit, 0                    , sr=F, st=F, sb=F)
+t1 <- classify(test1, nndigit, 1, t0$somme, t0$total, sr=F, st=F, sb=F)
+t2 <- classify(test2, nndigit, 2, t1$somme, t1$total, sr=F, st=F, sb=F)
+t3 <- classify(test3, nndigit, 3, t2$somme, t2$total, sr=F, st=F, sb=F)
+t4 <- classify(test4, nndigit, 4, t3$somme, t3$total, sr=F, st=F, sb=F)
+t5 <- classify(test5, nndigit, 5, t4$somme, t4$total, sr=F, st=F, sb=F)
+t6 <- classify(test6, nndigit, 6, t5$somme, t5$total, sr=F, st=F, sb=F)
+t7 <- classify(test7, nndigit, 7, t6$somme, t6$total, sr=F, st=F, sb=F)
+t8 <- classify(test8, nndigit, 8, t7$somme, t7$total, sr=F, st=F, sb=F)
+t9 <- classify(test9, nndigit, 9, t8$somme, t8$total, sr=F, st=F, sb=F)
+cat("res: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\n")
