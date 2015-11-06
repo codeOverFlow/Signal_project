@@ -652,7 +652,7 @@ dim(targSets)
 trainId <- sets$trainId
 validId <- sets$validId
 
-res <- learn.val(dataSets, targSets, trainId, validId, 15, 100, 20)
+res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
 nndigit <- res$nn
 
 test <- loadTests(5,4)
@@ -680,7 +680,7 @@ dim(targSets)
 trainId <- sets$trainId
 validId <- sets$validId
 
-res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
+res <- learn.val(dataSets, targSets, trainId, validId, 18, 100, 20)
 nndigit <- res$nn
 
 test <- loadTests(7,5)
