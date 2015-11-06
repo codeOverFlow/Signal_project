@@ -429,6 +429,21 @@ learn.cross  <- function(dataFt, dataTarg, nbN, maxIt, nbLoop, fold, sizeOfFold)
 }
 # }}}
 
+loadTests <- function(nr=5, nc=3) {
+	table0 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit0.txt", sep=""))
+   table1 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit1.txt", sep=""))
+   table2 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit2.txt", sep=""))
+   table3 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit3.txt", sep=""))
+   table4 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit4.txt", sep=""))
+   table5 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit5.txt", sep=""))
+   table6 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit6.txt", sep=""))
+   table7 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit7.txt", sep=""))
+   table8 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit8.txt", sep=""))
+   table9 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit9.txt", sep=""))
+
+	return(list(t0=table0, t1=table1, t2=table2, t3=table3, t4=table4, t5=table5, t6=table6, t7=table7, t8=table8, t9=table9))
+}
+
 # {{{ LOAD_DATAS(NR, NC, PRINTDATA, SIZE)
 loadDatas <- function(nr=5, nc=3, printdata=F, size=150, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    table0 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Train_compute_symbol_",nr,"_",nc,"Digit0.txt", sep=""))
@@ -583,7 +598,7 @@ classify <- function(data, nn, digit, somme=0, total=0, nr=5, nc=3, d=T, sl=T, s
 
 
 
-sets <- loadDatas(sr=F, st=F, sb=F)
+sets <- loadDatas()
 dataSets <- sets$allDataSet
 targSets <- sets$allTargSet
 
@@ -595,17 +610,6 @@ validId <- sets$validId
 
 res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
 nndigit <- res$nn
-
-test0 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit0.txt")
-test1 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit1.txt")
-test2 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit2.txt")
-test3 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit3.txt")
-test4 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit4.txt")
-test5 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit5.txt")
-test6 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit6.txt")
-test7 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit7.txt")
-test8 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit8.txt")
-test9 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit9.txt")
 
 # cross validation
 #meansT <- c()
@@ -622,16 +626,73 @@ test9 <- Load_Obs("../../data/Data5X3/Train_compute_symbol_5_3Digit9.txt")
 #par(fg = "red")
 #plot(tmp, meansT, type = "l")
 
-t0 <- classify(test0, nndigit, 0                    , sr=F, st=F, sb=F)
-t1 <- classify(test1, nndigit, 1, t0$somme, t0$total, sr=F, st=F, sb=F)
-t2 <- classify(test2, nndigit, 2, t1$somme, t1$total, sr=F, st=F, sb=F)
-t3 <- classify(test3, nndigit, 3, t2$somme, t2$total, sr=F, st=F, sb=F)
-t4 <- classify(test4, nndigit, 4, t3$somme, t3$total, sr=F, st=F, sb=F)
-t5 <- classify(test5, nndigit, 5, t4$somme, t4$total, sr=F, st=F, sb=F)
-t6 <- classify(test6, nndigit, 6, t5$somme, t5$total, sr=F, st=F, sb=F)
-t7 <- classify(test7, nndigit, 7, t6$somme, t6$total, sr=F, st=F, sb=F)
-t8 <- classify(test8, nndigit, 8, t7$somme, t7$total, sr=F, st=F, sb=F)
-t9 <- classify(test9, nndigit, 9, t8$somme, t8$total, sr=F, st=F, sb=F)
-cat("res: ", t9$somme, "/", t9$total, "\n")
-cat("precision: ", (t9$somme/t9$total)*100, "%\n")
+test <- loadTests()
 
+t0 <- classify(test$t0, nndigit, 0                    )
+t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total)
+t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total)
+t3 <- classify(test$t3, nndigit, 3, t2$somme, t2$total)
+t4 <- classify(test$t4, nndigit, 4, t3$somme, t3$total)
+t5 <- classify(test$t5, nndigit, 5, t4$somme, t4$total)
+t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total)
+t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total)
+t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total)
+t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total)
+cat("\n\nres: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
+
+
+sets <- loadDatas(nr=5, nc=4)
+dataSets <- sets$allDataSet
+targSets <- sets$allTargSet
+
+dim(dataSets)
+dim(targSets)
+
+trainId <- sets$trainId
+validId <- sets$validId
+
+res <- learn.val(dataSets, targSets, trainId, validId, 15, 100, 20)
+nndigit <- res$nn
+
+test <- loadTests(5,4)
+t0 <- classify(test$t0, nndigit, 0                    , nr=5, nc=4)
+t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=5, nc=4)
+t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=5, nc=4)
+t3 <- classify(test$t3, nndigit, 3, t2$somme, t2$total, nr=5, nc=4)
+t4 <- classify(test$t4, nndigit, 4, t3$somme, t3$total, nr=5, nc=4)
+t5 <- classify(test$t5, nndigit, 5, t4$somme, t4$total, nr=5, nc=4)
+t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=5, nc=4)
+t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=5, nc=4)
+t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=5, nc=4)
+t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=5, nc=4)
+cat("res: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
+
+
+sets <- loadDatas(nr=7, nc=5)
+dataSets <- sets$allDataSet
+targSets <- sets$allTargSet
+
+dim(dataSets)
+dim(targSets)
+
+trainId <- sets$trainId
+validId <- sets$validId
+
+res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
+nndigit <- res$nn
+
+test <- loadTests(7,5)
+t0 <- classify(test$t0, nndigit, 0                    , nr=7, nc=5)
+t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=7, nc=5)
+t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=7, nc=5)
+t3 <- classify(test$t3, nndigit, 3, t2$somme, t2$total, nr=7, nc=5)
+t4 <- classify(test$t4, nndigit, 4, t3$somme, t3$total, nr=7, nc=5)
+t5 <- classify(test$t5, nndigit, 5, t4$somme, t4$total, nr=7, nc=5)
+t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=7, nc=5)
+t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=7, nc=5)
+t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=7, nc=5)
+t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=7, nc=5)
+cat("res: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
