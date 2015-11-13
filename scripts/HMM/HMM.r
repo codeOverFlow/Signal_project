@@ -18,18 +18,18 @@ classify <- function(hmms, obs)
   }
 }
 
-loadFiles <- function(type, X, Y)
+loadFiles <- function(type, dir, file)
 {
-  file0 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit0.txt', sep=''))
-  file1 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit1.txt', sep=''))
-  file2 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit2.txt', sep=''))
-  file3 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit3.txt', sep=''))
-  file4 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit4.txt', sep=''))
-  file5 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit5.txt', sep=''))
-  file6 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit6.txt', sep=''))
-  file7 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit7.txt', sep=''))
-  file8 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit8.txt', sep=''))
-  file9 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit9.txt', sep=''))
+  file0 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit0.txt', sep=''))
+  file1 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit1.txt', sep=''))
+  file2 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit2.txt', sep=''))
+  file3 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit3.txt', sep=''))
+  file4 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit4.txt', sep=''))
+  file5 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit5.txt', sep=''))
+  file6 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit6.txt', sep=''))
+  file7 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit7.txt', sep=''))
+  file8 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit8.txt', sep=''))
+  file9 = Load_Obs(paste('../../data/',dir, '/', type, '_compute_symbol_', file, 'Digit9.txt', sep=''))
   
   indexFile=c(0, 
               dim(file0)[1], 
@@ -114,7 +114,7 @@ initHMMDigit <- function(nbStates, nbSymbols, matrixInitialization)
 
 
 
-rTrain = loadFiles('Train', 5, 3)
+rTrain = loadFiles('Train', 'Data5X3', '5_3')
 feats = rTrain$feats
 indexTrain = rTrain$index
 
