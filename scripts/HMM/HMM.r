@@ -92,11 +92,12 @@ for(i in 0:9)
 {
   cat("Train ",i,"\n")
   hmm_tmp=baumWelchList(hmm, feats[(indexTrain[i+1]+1):(indexTrain[i+2]),])$hmm
-  dput(hmm_tmp, file=paste('data/hmm',i,sep=''))
   hmm_train=rbind(hmm_train, hmm_tmp)
   indexHmmTrain=c(indexHmmTrain, sum+dim(hmm_tmp)[1])
   sum=sum+dim(hmm_tmp)[1]
 }
+
+dput(hmm_train, file='data/hmms')
 
 cat("\n\n")
 
