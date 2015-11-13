@@ -54,6 +54,7 @@ loadFiles <- function(type, dir, file)
 computeScores <- function(hmms, feats, indexFeats)
 {
   scores = c()
+  sum = 0
   for(i in 0:9)
   {
     score = 0
@@ -65,10 +66,13 @@ computeScores <- function(hmms, feats, indexFeats)
         score <- score +1
       }
     }
+    sum = sum + score
     scores = c(scores, score/(indexFeats[i+2]-indexFeats[i+1]))
   }
+  
+  globalReco = sum/indexFeats[11]
 
-  return(scores)
+  return(list(globalReco=globalReco, scores=scores))
 }
 
 initHMMDigit <- function(nbStates, nbSymbols, matrixInitialization)
@@ -168,21 +172,29 @@ run <- function(featureCase, nbStates, matrixInitialization)
   }
 
   cat("\nSave\n")
-  dput(hmm_train, file='data/hmms')
+  dput(hmm_train, file=paste('data/',dir,'_',nbStates,'_',matrixInitialization,'_hmms',sep=''))
 
   cat("\n\n")
 
   rTest = loadFiles('Test', dir, file)
   tests = rTest$feats
   indexTest = rTest$index
-
+ 
   cat("\n\n")
 
   scoresTrain = computeScores(hmm_train, feats, indexTrain)
-  cat("Scores Train : ", scoresTrain, "\n")
+  cat("Train global recognition rate  : ", scoresTrain$globalReco, "\n")
+  cat("Scores Train : ", scoresTrain$scores, "\n")
+  
+  dput(scoresTrain, file=paste('data/',dir,'_',nbStates,'_',matrixInitialization,'_scoresTrain', sep=''))
+  
+  cat("\n")
 
   scoresTest = computeScores(hmm_train, tests, indexTest)
-  cat("Scores Test : ", scoresTest, "\n")  
+  cat("Test global recognition rate  : ", scoresTest$globalReco, "\n")
+  cat("Scores Test : ", scoresTest$scores, "\n") 
+  
+  dput(scoresTest, file=paste('data/',dir,'_',nbStates,'_',matrixInitialization,'_scoresTest', sep=''))
 }
 
 run("5X3", 3, "optimal")
