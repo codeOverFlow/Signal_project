@@ -112,38 +112,77 @@ initHMMDigit <- function(nbStates, nbSymbols, matrixInitialization)
   return(initHMM(states, symbols, startProbs=startProbs, transProbs=transProbs))
 }
 
-
-
-rTrain = loadFiles('Train', 'Data5X3', '5_3')
-feats = rTrain$feats
-indexTrain = rTrain$index
-
-hmm = initHMMDigit(3, 15, "optimal")
-
-cat("\n\n")
-
-hmm_train=rbind()
-
-for(i in 0:9)
+selectOptions <- function(featureCase)
 {
-  cat("Train ",i,"\n")
-  hmm_tmp=baumWelchList(hmm, feats[(indexTrain[i+1]+1):(indexTrain[i+2]),])$hmm
-  hmm_train=rbind(hmm_train, hmm_tmp)
+  if(featureCase == '5X3')
+  {
+    dir = 'Data5X3'
+    file = '5_3'
+    nbSymbols = 15
+  }
+  else if(featureCase == '5X4')
+  {
+    dir = 'Data5X4'
+    file = '5_4'
+    nbSymbols = 20
+  }
+  else if(featureCase == 'Dir8')
+  {
+    dir = 'Dir8'
+    file = 'dir_8'
+    nbSymbols = 8
+  }
+  else if(featureCase == 'Dir16')
+  {
+    dir = 'Dir16'
+    file = 'dir_16'
+    nbSymbols = 16
+  }
+  
+  return(list(dir=dir, file=file, nbSymbols=nbSymbols))
 }
 
-cat("\nSave\n")
-dput(hmm_train, file='data/hmms')
+run <- function(featureCase, nbStates, matrixInitialization)
+{
+  
+  options=selectOptions(featureCase)
+  dir = options$dir
+  file = options$file
+  nbSymbols=options$nbSymbols
 
-cat("\n\n")
+  rTrain = loadFiles('Train', dir, file)
+  feats = rTrain$feats
+  indexTrain = rTrain$index
 
-rTest = loadFiles('Test', 5, 3)
-tests = rTest$feats
-indexTest = rTest$index
+  hmm = initHMMDigit(nbStates, nbSymbols, matrixInitialization)
 
-cat("\n\n")
+  cat("\n\n")
 
-scoresTrain = computeScores(hmm_train, feats, indexTrain)
-cat("Scores Train : ", scoresTrain, "\n")
+  hmm_train=rbind()
 
-scoresTest = computeScores(hmm_train, tests, indexTest)
-cat("Scores Test : ", scoresTest, "\n")
+  for(i in 0:9)
+  {
+    cat("Train ",i,"\n")
+    hmm_tmp=baumWelchList(hmm, feats[(indexTrain[i+1]+1):(indexTrain[i+2]),])$hmm
+    hmm_train=rbind(hmm_train, hmm_tmp)
+  }
+
+  cat("\nSave\n")
+  dput(hmm_train, file='data/hmms')
+
+  cat("\n\n")
+
+  rTest = loadFiles('Test', dir, file)
+  tests = rTest$feats
+  indexTest = rTest$index
+
+  cat("\n\n")
+
+  scoresTrain = computeScores(hmm_train, feats, indexTrain)
+  cat("Scores Train : ", scoresTrain, "\n")
+
+  scoresTest = computeScores(hmm_train, tests, indexTest)
+  cat("Scores Test : ", scoresTest, "\n")  
+}
+
+run("5X3", 3, "optimal")
