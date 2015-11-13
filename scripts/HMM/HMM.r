@@ -71,16 +71,54 @@ computeScores <- function(hmms, feats, indexFeats)
   return(scores)
 }
 
+initHMMDigit <- function(nbStates, nbSymbols, matrixInitialization)
+{
+  if(matrixInitialization == "uniform")
+  {
+    sameProb = 0.5
+    nextProb = 0.5
+  }
+  else
+  {
+    sameProb = 0.9
+    nextProb = 0.1
+  }
+
+  states=c("s1")
+  startProbs=c(1)
+  transProbs = matrix(c(0)*nbStates*nbStates, nrow = nbStates, ncol = nbStates, byrow=T)
+  transProbs[1,1] = sameProb
+  transProbs[1,2] = nextProb
+  
+  for(i in 2:(nbStates-1))
+  {
+    states = c(states, paste("s",i,sep=''))
+    startProbs = c(startProbs, 0)
+
+    transProbs[i,i] = sameProb
+    transProbs[i, i+1] = nextProb
+  }
+  
+  states = c(states, paste("s",nbStates,sep=''))
+  startProbs = c(startProbs, 0)
+  transProbs[nbStates,nbStates] = 1.0
+  
+  symbols=c()
+  for(i in 1:nbSymbols)
+  {
+    symbols=c(symbols, i)
+  }
+  
+  return(initHMM(states, symbols, startProbs=startProbs, transProbs=transProbs))
+}
+
+
+
 rTrain = loadFiles('Train', 5, 3)
 feats = rTrain$feats
 indexTrain = rTrain$index
 
-states = c("s1", "s2", "s3")
-symbols = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
-startProbs = c(1,0,0)
-transProbs = matrix(c(0.9, 0.1, 0, 0, 0.9, 0.1, 0, 0, 1), nrow = 3, ncol = 3, byrow=T)
-
-hmm = initHMM(states, symbols, startProbs=startProbs, transProbs=transProbs)
+hmm = initHMMDigit(3, 15, "optimal")
 
 cat("\n\n")
 
