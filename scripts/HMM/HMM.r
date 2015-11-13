@@ -43,12 +43,32 @@ loadFiles <- function(type, X, Y)
               dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1]+dim(file7)[1]+dim(file8)[1],
               dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1]+dim(file7)[1]+dim(file8)[1]+dim(file9)[1])
 
-  indexFile=c(0,10,20,30,40,50,60,70,80,90,100)
+  #indexFile=c(0,10,20,30,40,50,60,70,80,90,100)
   indexFile
   feats=rbind(file0, file1, file2, file3, file4, file5, file6, file7, file8, file9)
-  feats=rbind(file0[1:10,], file1[1:10,], file2[1:10,], file3[1:10,], file4[1:10,], file5[1:10,], file6[1:10,], file7[1:10,], file8[1:10,], file9[1:10,])
+  #feats=rbind(file0[1:10,], file1[1:10,], file2[1:10,], file3[1:10,], file4[1:10,], file5[1:10,], file6[1:10,], file7[1:10,], file8[1:10,], file9[1:10,])
   
   return(list(feats=feats, index=indexFile))
+}
+
+computeScores <- function(hmms, feats, indexFeats)
+{
+  scores = c()
+  for(i in 0:9)
+  {
+    score = 0
+    for(j in (indexFeats[i+1]+1):(indexFeats[i+2]))
+    {
+      res = classify(hmms, feats[j,])
+      if(res == i)
+      {
+        score <- score +1
+      }
+    }
+    scores = c(scores, score/(indexFeats[i+2]-indexFeats[i+1]))
+  }
+
+  return(scores)
 }
 
 rTrain = loadFiles('Train', 5, 3)
@@ -86,40 +106,8 @@ indexTest = rTest$index
 
 cat("\n\n")
 
-scoresTrain = c()
-for(i in 0:9)
-{
-  score = 0
-  for(j in (indexTrain[i+1]+1):(indexTrain[i+2]))
-  {
-    res = classify(hmm_train, feats[j,])
-    #cat("Train : ", i, " => ", res, "\n")
-    if(res == i)
-    {
-      score <- score +1
-    }
-  }
-  scoresTrain = c(scoresTrain, score/(indexTrain[i+2]-indexTrain[i+1]))
-  #cat("\n\n")
-}
-
+scoresTrain = computeScores(hmm_train, feats, indexTrain)
 cat("Scores Train : ", scoresTrain, "\n")
 
-scoresTest = c()
-for(i in 0:9)
-{
-  score = 0
-  for(j in (indexTest[i+1]+1):(indexTest[i+2]))
-  {
-    res = classify(hmm_train, tests[j,])
-    #cat("Test : ", i, " => ", res, "\n")
-    if(res == i)
-    {
-      score <- score +1
-    }
-  }
-  scoresTest = c(scoresTest, score/(indexTest[i+2]-indexTest[i+1]))
-  #cat("\n\n")
-}
-
+scoresTest = computeScores(hmm_train, tests, indexTest)
 cat("Scores Test : ", scoresTest, "\n")
