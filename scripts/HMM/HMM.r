@@ -18,32 +18,42 @@ classify <- function(hmms, obs)
   }
 }
 
-train0 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit0.txt')
-train1 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit1.txt')
-train2 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit2.txt')
-train3 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit3.txt')
-train4 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit4.txt')
-train5 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit5.txt')
-train6 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit6.txt')
-train7 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit7.txt')
-train8 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit8.txt')
-train9 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit9.txt')
-indexTrain=c(0, 
-              dim(train0)[1], 
-              dim(train0)[1]+dim(train1)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1]+dim(train8)[1],
-              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1]+dim(train8)[1]+dim(train9)[1])
+loadFiles <- function(type, X, Y)
+{
+  file0 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit0.txt', sep=''))
+  file1 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit1.txt', sep=''))
+  file2 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit2.txt', sep=''))
+  file3 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit3.txt', sep=''))
+  file4 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit4.txt', sep=''))
+  file5 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit5.txt', sep=''))
+  file6 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit6.txt', sep=''))
+  file7 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit7.txt', sep=''))
+  file8 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit8.txt', sep=''))
+  file9 = Load_Obs(paste('../../data/Data', X, 'X', Y, '/', type, '_compute_symbol_', X, '_', Y, 'Digit9.txt', sep=''))
+  
+  indexFile=c(0, 
+              dim(file0)[1], 
+              dim(file0)[1]+dim(file1)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1]+dim(file7)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1]+dim(file7)[1]+dim(file8)[1],
+              dim(file0)[1]+dim(file1)[1]+dim(file2)[1]+dim(file3)[1]+dim(file4)[1]+dim(file5)[1]+dim(file6)[1]+dim(file7)[1]+dim(file8)[1]+dim(file9)[1])
 
-#indexTrain=c(0,10,20,30,40,50,60,70,80,90,100)
-indexTrain
-feats=rbind(train0, train1, train2, train3, train4, train5, train6, train7, train8, train9)
-#feats=rbind(train0[1:10,], train1[1:10,], train2[1:10,], train3[1:10,], train4[1:10,], train5[1:10,], train6[1:10,], train7[1:10,], train8[1:10,], train9[1:10,])
+  indexFile=c(0,10,20,30,40,50,60,70,80,90,100)
+  indexFile
+  feats=rbind(file0, file1, file2, file3, file4, file5, file6, file7, file8, file9)
+  feats=rbind(file0[1:10,], file1[1:10,], file2[1:10,], file3[1:10,], file4[1:10,], file5[1:10,], file6[1:10,], file7[1:10,], file8[1:10,], file9[1:10,])
+  
+  return(list(feats=feats, index=indexFile))
+}
+
+rTrain = loadFiles('Train', 5, 3)
+feats = rTrain$feats
+indexTrain = rTrain$index
 
 states = c("s1", "s2", "s3")
 symbols = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
@@ -68,29 +78,13 @@ for(i in 0:9)
   sum=sum+dim(hmm_tmp)[1]
 }
 
-test0 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit0.txt')
-test1 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit1.txt')
-test2 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit2.txt')
-test3 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit3.txt')
-test4 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit4.txt')
-test5 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit5.txt')
-test6 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit6.txt')
-test7 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit7.txt')
-test8 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit8.txt')
-test9 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit9.txt')
-tests = rbind(test0, test1, test2, test3, test4, test5, test6, test7, test8, test9)
-indexTest=c(0, 
-              dim(test0)[1], 
-              dim(test0)[1]+dim(test1)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1]+dim(test8)[1],
-              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1]+dim(test8)[1]+dim(test9)[1])
+cat("\n\n")
 
+rTest = loadFiles('Test', 5, 3)
+tests = rTest$feats
+indexTest = rTest$index
+
+cat("\n\n")
 
 scoresTrain = c()
 for(i in 0:9)
@@ -106,7 +100,7 @@ for(i in 0:9)
     }
   }
   scoresTrain = c(scoresTrain, score/(indexTrain[i+2]-indexTrain[i+1]))
-  cat("\n\n")
+  #cat("\n\n")
 }
 
 cat("Scores Train : ", scoresTrain, "\n")
@@ -125,7 +119,7 @@ for(i in 0:9)
     }
   }
   scoresTest = c(scoresTest, score/(indexTest[i+2]-indexTest[i+1]))
-  cat("\n\n")
+  #cat("\n\n")
 }
 
 cat("Scores Test : ", scoresTest, "\n")
