@@ -1,41 +1,21 @@
 source('newHMM.r')
 source('../tools/usefullTools.r')
 
-classify <- function(hmm0, hmm1, hmm2, hmm3, hmm4, hmm5, hmm6, hmm7, hmm8, hmm9, obs)
+classify <- function(hmms, obs)
 {
-  l0 = loglikelihood(hmm0, obs)
-  l1 = loglikelihood(hmm1, obs)
-  l2 = loglikelihood(hmm2, obs)
-  l3 = loglikelihood(hmm3, obs)
-  l4 = loglikelihood(hmm4, obs)
-  l5 = loglikelihood(hmm5, obs)
-  l6 = loglikelihood(hmm6, obs)
-  l7 = loglikelihood(hmm7, obs)
-  l8 = loglikelihood(hmm8, obs)
-  l9 = loglikelihood(hmm9, obs)  
+  lls=c()
+  for(i in c(0,1,2,3,4,5,6,7,8,9))
+  {
+    lls = c(lls, loglikelihood(hmms[i+1,], obs))
+  }
   
-  maxl = max(l0, l1, l2, l3, l4, l5, l6, l7, l8, l9)
+  maxl = max(lls)
   
-  if(maxl == l0)
-    return("0")
-  else if(maxl == l1)
-    return("1")
-  else if(maxl == l2)
-    return("2")
-  else if(maxl == l3)
-    return("3")
-  else if(maxl == l4)
-    return("4")
-  else if(maxl == l5)
-    return("5")
-  else if(maxl == l6)
-    return("6")
-  else if(maxl == l7)
-    return("7")
-  else if(maxl == l8)
-    return("8")
-  else if(maxl == l9)
-    return("9")
+  for(i in c(0,1,2,3,4,5,6,7,8,9))
+  {
+    if(maxl == lls[i+1])
+      return(i)
+  }
 }
 
 train0 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit0.txt')
@@ -48,16 +28,22 @@ train6 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit6.txt')
 train7 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit7.txt')
 train8 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit8.txt')
 train9 = Load_Obs('../../data/Data5X3/Train_compute_symbol_5_3Digit9.txt')
-feat0=train0[1:10,]
-feat1=train1[1:10,]
-feat2=train2[1:10,]
-feat3=train3[1:10,]
-feat4=train4[1:10,]
-feat5=train5[1:10,]
-feat6=train6[1:10,]
-feat7=train7[1:10,]
-feat8=train8[1:10,]
-feat9=train9[1:10,]
+indexTrain=c(0, 
+              dim(train0)[1], 
+              dim(train0)[1]+dim(train1)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1]+dim(train8)[1],
+              dim(train0)[1]+dim(train1)[1]+dim(train2)[1]+dim(train3)[1]+dim(train4)[1]+dim(train5)[1]+dim(train6)[1]+dim(train7)[1]+dim(train8)[1]+dim(train9)[1])
+
+#indexTrain=c(0,10,20,30,40,50,60,70,80,90,100)
+indexTrain
+feats=rbind(train0, train1, train2, train3, train4, train5, train6, train7, train8, train9)
+#feats=rbind(train0[1:10,], train1[1:10,], train2[1:10,], train3[1:10,], train4[1:10,], train5[1:10,], train6[1:10,], train7[1:10,], train8[1:10,], train9[1:10,])
 
 states = c("s1", "s2", "s3")
 symbols = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
@@ -66,18 +52,21 @@ transProbs = matrix(c(0.9, 0.1, 0, 0, 0.9, 0.1, 0, 0, 1), nrow = 3, ncol = 3, by
 
 hmm = initHMM(states, symbols, startProbs=startProbs, transProbs=transProbs)
 
-cat("Train\n\n")
-hmm_train_0 = baumWelchList(hmm, feat0)$hmm
-hmm_train_1 = baumWelchList(hmm, feat1)$hmm
-hmm_train_2 = baumWelchList(hmm, feat2)$hmm
-hmm_train_3 = baumWelchList(hmm, feat3)$hmm
-hmm_train_4 = baumWelchList(hmm, feat4)$hmm
-hmm_train_5 = baumWelchList(hmm, feat5)$hmm
-hmm_train_6 = baumWelchList(hmm, feat6)$hmm
-hmm_train_7 = baumWelchList(hmm, feat7)$hmm
-hmm_train_8 = baumWelchList(hmm, feat8)$hmm
-hmm_train_9 = baumWelchList(hmm, feat9)$hmm
+cat("\n\n")
 
+hmm_train=rbind()
+indexHmmTrain=c(0)
+sum=0
+
+for(i in 0:9)
+{
+  cat("Train ",i,"\n")
+  hmm_tmp=baumWelchList(hmm, feats[(indexTrain[i+1]+1):(indexTrain[i+2]),])$hmm
+  dput(hmm_tmp, file=paste('data/hmm',i,sep=''))
+  hmm_train=rbind(hmm_train, hmm_tmp)
+  indexHmmTrain=c(indexHmmTrain, sum+dim(hmm_tmp)[1])
+  sum=sum+dim(hmm_tmp)[1]
+}
 
 test0 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit0.txt')
 test1 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit1.txt')
@@ -89,63 +78,25 @@ test6 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit6.txt')
 test7 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit7.txt')
 test8 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit8.txt')
 test9 = Load_Obs('../../data/Data5X3/Test_compute_symbol_5_3Digit9.txt')
+tests = rbind(test0, test1, test2, test3, test4, test5, test6, test7, test8, test9)
+indexTest=c(0, 
+              dim(test0)[1], 
+              dim(test0)[1]+dim(test1)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1]+dim(test8)[1],
+              dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1]+dim(test8)[1]+dim(test9)[1])
 
-for(j in 1:10)
-{
-  cat("Test : 0 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test0[j,]), "\n")
-}
-cat("\n")
 
-for(j in 1:10)
+for(i in 0:9)
 {
-  cat("Test : 1 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test1[j,]), "\n")
+  for(j in indexTest[i+1]+1:indexTest[i+2])
+  {
+    cat("Test : ", i, " => ", classify(hmm_train, tests[j,]), "\n")
+  }
+  cat("\n\n")
 }
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 2 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test2[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 3 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test3[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 4 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test4[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 5 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test5[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 6 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test6[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 7 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test7[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 8 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test8[j,]), "\n")
-}
-cat("\n")
-
-for(j in 1:10)
-{
-  cat("Test : 9 => ", classify(hmm_train_0, hmm_train_1, hmm_train_2, hmm_train_3, hmm_train_4, hmm_train_5, hmm_train_6, hmm_train_7, hmm_train_8, hmm_train_9, test9[j,]), "\n")
-}
-cat("\n")
