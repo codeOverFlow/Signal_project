@@ -92,11 +92,40 @@ indexTest=c(0,
               dim(test0)[1]+dim(test1)[1]+dim(test2)[1]+dim(test3)[1]+dim(test4)[1]+dim(test5)[1]+dim(test6)[1]+dim(test7)[1]+dim(test8)[1]+dim(test9)[1])
 
 
+scoresTrain = c()
 for(i in 0:9)
 {
-  for(j in indexTest[i+1]+1:indexTest[i+2])
+  score = 0
+  for(j in (indexTrain[i+1]+1):(indexTrain[i+2]))
   {
-    cat("Test : ", i, " => ", classify(hmm_train, tests[j,]), "\n")
+    res = classify(hmm_train, feats[j,])
+    #cat("Train : ", i, " => ", res, "\n")
+    if(res == i)
+    {
+      score <- score +1
+    }
   }
+  scoresTrain = c(scoresTrain, score/(indexTrain[i+2]-indexTrain[i+1]))
   cat("\n\n")
 }
+
+cat("Scores Train : ", scoresTrain, "\n")
+
+scoresTest = c()
+for(i in 0:9)
+{
+  score = 0
+  for(j in (indexTest[i+1]+1):(indexTest[i+2]))
+  {
+    res = classify(hmm_train, tests[j,])
+    #cat("Test : ", i, " => ", res, "\n")
+    if(res == i)
+    {
+      score <- score +1
+    }
+  }
+  scoresTest = c(scoresTest, score/(indexTest[i+2]-indexTest[i+1]))
+  cat("\n\n")
+}
+
+cat("Scores Test : ", scoresTest, "\n")
