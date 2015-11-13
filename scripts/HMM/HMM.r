@@ -197,4 +197,17 @@ run <- function(featureCase, nbStates, matrixInitialization)
   dput(scoresTest, file=paste('data/',dir,'_',nbStates,'_',matrixInitialization,'_scoresTest', sep=''))
 }
 
-run("5X3", 3, "optimal")
+launchAllRun <- function()
+{
+  run("5X3", 3, "optimal")
+  run("5X4", 3, "optimal")
+  run("Dir8", 3, "optimal")
+  run("Dir16", 3, "optimal")
+
+  run("5X3", 3, "uniform")
+  run("5X4", 3, "uniform")
+  run("Dir8", 3, "uniform")
+  run("Dir16", 3, "uniform")
+}
+
+launchAllRun()
