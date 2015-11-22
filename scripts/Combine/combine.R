@@ -84,7 +84,14 @@ classifySum <- function(hmms, nndigits, obs)
    reshmm <- sapply(reshmm, function(x) { return(x/sumhmm)})
    resnn <- predict(nndigit, createFeatures2(obs, 5, 4))
    res <- resnn + reshmm
-   return(0)
+   
+   maxl = max(res)
+  
+   for(i in c(0,1,2,3,4,5,6,7,8,9))
+   {
+     if(maxl == res[i+1])
+       return(i)
+   }
 }
 
 classifyBorda <- function(hmms, nndigits, obs)
@@ -98,7 +105,7 @@ rTest = loadFiles('Test', 'Data5X4', '5_4')
 tests = rTest$feats
 indexTest = rTest$index
 
-bestHmms = dget('../HMM/data/Data5X4_9_optimal_hmms')
+bestHmms = dget('../HMM/data/Data5X4_7_optimal_hmms')
 probsHmm = classifyHMM(bestHmms, tests[1,])
 print(probsHmm)
 
