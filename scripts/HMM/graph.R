@@ -51,6 +51,28 @@ graphNbStates <- function(type, matrice)
   dev.off()
 }
 
+graphNbLongStates <- function(type, matrice)
+{
+  a=loadFile(type, 3, matrice)
+  b=loadFile(type, 6, matrice)
+  c=loadFile(type, 7, matrice)
+  d=loadFile(type, 8, matrice)
+  e=loadFile(type, 9, matrice)
+  f=loadFile(type, 10, matrice)
+  g=loadFile(type, 15, matrice)
+  h=loadFile(type, 18, matrice)
+  i=loadFile(type, 21, matrice)
+  j=loadFile(type, 24, matrice)
+  
+  jpeg(paste("graph/nbLongStates_", type, "_", matrice, ".jpg", sep=''))
+  matplot(c(3,6,7,8,9,10,15,18,21,24), matrix(c(a$test$globalReco, b$test$globalReco, c$test$globalReco, d$test$globalReco, e$test$globalReco, f$test$globalReco, g$test$globalReco, h$test$globalReco, i$test$globalReco, j$test$globalReco, 
+                            a$train$globalReco, b$train$globalReco, c$train$globalReco, d$train$globalReco, e$train$globalReco, f$train$globalReco, g$train$globalReco, h$train$globalReco, i$train$globalReco, j$train$globalReco
+                                ), nrow=10), type="l", col=c("red", "blue"), xlab="Nomber of states", ylab="Global Recognition", xaxt='n', ylim=c(0.82,0.9))
+  axis(side=1, at=c(3,6,7,8,9,10,15,18,21,24), labels=c(3,6,7,8,9,10,15,18,21,24))
+  
+  dev.off()
+}
+
 graphOptimalVsUniform(3)
 graphOptimalVsUniform(6)
 graphOptimalVsUniform(9)
@@ -63,3 +85,5 @@ graphNbStates("Data5X3", "optimal")
 graphNbStates("Data5X4", "optimal")
 graphNbStates("Dir8", "optimal")
 graphNbStates("Dir16", "optimal")
+
+graphNbLongStates("Data5X4", "optimal")
