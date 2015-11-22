@@ -79,12 +79,18 @@ computeAllScores <- function(hmms, nndigit, feats, indexFeats, combine)
 
 classifySum <- function(hmms, nndigits, obs)
 {
-
+  reshmm <- lapply(classifyHMM(hmms, obs), function(x) { return(exp(x)) })
+  sumhmm <- sum(reshmm)
+  reshmm <- lapply(reshmm, function(x) { return(x/sumhmm)})
+  resnn <- predict(nndigit, createFeatures2(obs, 5, 4))
+  res <- resnn + reshmm
+  cat(res)
+  return(0)
 }
 
 classifyBorda <- function(hmms, nndigits, obs)
 {
-  
+  return(0)
 }
 
 
