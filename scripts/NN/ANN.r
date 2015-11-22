@@ -119,6 +119,20 @@ createDensity <- function(img) {
 }
 # }}}
 
+# {{{ CREATE_DENSITY2
+createDensity2 <- function(img) {
+   # binarise the img
+   binarised <- apply(img, 2, function(x) { ifelse(x != 0, 1, 0) } )
+   # make a vector with the sum of each binarised line
+   nbNon0PerCols <- matrix(colSums(binarised), nrow=1)
+   # sum all 
+   bigSum <- sum(nbNon0PerCols)
+   # normalize
+   tmp <- unlist(Map(function(x) { x/bigSum }, nbNon0PerCols))
+   return(tmp)
+}
+# }}}
+
 # {{{ CREATE_SOUND_LEFT
 createSoundLeft <- function(img) {
    # binarise the img
@@ -263,7 +277,7 @@ createMeanC <- function(img) {
 # }}}
 
 # {{{ CREATE_FEATURES(TAB, NR, NC, D, SL, SR, ST, SB, MR, MC)
-createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
+createFeatures <- function(tab, nr=5, nc=3, d=T, d2=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    res <- c()
    len <- 0
    for(i in 1:dim(tab)[1]) {
@@ -271,6 +285,9 @@ createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, m
 
       df <- c()
       if (d) { df <- createDensity(img) }
+
+      d2f <- c()
+      if (d2) { d2f <- createDensity2(img) }
 
       l <- c() 
       if (sl) { l <- createSoundLeft(img) }
@@ -290,7 +307,7 @@ createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, m
       mC <- c()
       if (mc) { mC <- createMeanC(img) }
 
-      concat <- c(df,l,r,t,b,mR,mC)
+      concat <- c(df,d2f,l,r,t,b,mR,mC)
       len <- length(concat)
 
       res <- c(res, concat)
@@ -300,11 +317,14 @@ createFeatures <- function(tab, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, m
 # }}}
 
 # {{{ CREATE_FEATURES_2(TAB, NR, NC, D, SL, SR, ST, SB, MR, MC)
-createFeatures2 <- function(l, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
+createFeatures2 <- function(l, nr=5, nc=3, d=T, d2=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    img <- constructImg(l, nr, nc)
 
    df <- c()
    if (d) { df <- createDensity(img) }
+
+   d2f <- c()
+      if (d2) { d2f <- createDensity2(img) }
 
    l <- c() 
    if (sl) { l <- createSoundLeft(img) }
@@ -324,7 +344,7 @@ createFeatures2 <- function(l, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc
    mC <- c()
    if (mc) { mC <- createMeanC(img) }
 
-   concat <- c(df,l,r,t,b,mR,mC)
+   concat <- c(df,d2f,l,r,t,b,mR,mC)
    return(concat)
 }
 # }}}
@@ -429,20 +449,39 @@ learn.cross  <- function(dataFt, dataTarg, nbN, maxIt, nbLoop, fold, sizeOfFold)
 }
 # }}}
 
-loadTests <- function(nr=5, nc=3) {
-	table0 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit0.txt", sep=""))
-   table1 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit1.txt", sep=""))
-   table2 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit2.txt", sep=""))
-   table3 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit3.txt", sep=""))
-   table4 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit4.txt", sep=""))
-   table5 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit5.txt", sep=""))
-   table6 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit6.txt", sep=""))
-   table7 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit7.txt", sep=""))
-   table8 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit8.txt", sep=""))
-   table9 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/Test_compute_symbol_",nr,"_",nc,"Digit9.txt", sep=""))
+# {{{ LOAD_TEST(NR, NC)
+loadTests <- function(n="Test",nr=5, nc=3) {
+	table0 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit0.txt", sep=""))
+   table1 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit1.txt", sep=""))
+   table2 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit2.txt", sep=""))
+   table3 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit3.txt", sep=""))
+   table4 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit4.txt", sep=""))
+   table5 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit5.txt", sep=""))
+   table6 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit6.txt", sep=""))
+   table7 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit7.txt", sep=""))
+   table8 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit8.txt", sep=""))
+   table9 <- Load_Obs(paste("../../data/Data",nr,"X",nc,"/",n,"_compute_symbol_",nr,"_",nc,"Digit9.txt", sep=""))
 
 	return(list(t0=table0, t1=table1, t2=table2, t3=table3, t4=table4, t5=table5, t6=table6, t7=table7, t8=table8, t9=table9))
 }
+# }}}
+
+# {{{ LOAD_TEST(NR, NC)
+loadTestsDir <- function(na=8) {
+	table0 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table1 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table2 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table3 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table4 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table5 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table6 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table7 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table8 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table9 <- Load_Obs(paste("../../data/Dir",na,"/Test_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+
+	return(list(t0=table0, t1=table1, t2=table2, t3=table3, t4=table4, t5=table5, t6=table6, t7=table7, t8=table8, t9=table9))
+}
+# }}}
 
 # {{{ LOAD_DATAS(NR, NC, PRINTDATA, SIZE)
 loadDatas <- function(nr=5, nc=3, printdata=F, size=150, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
@@ -532,6 +571,70 @@ loadDatas <- function(nr=5, nc=3, printdata=F, size=150, d=T, sl=T, sr=T, st=T, 
 }
 # }}}
 
+# {{{ LOAD_DATAS_DIR(NR, NC, PRINTDATA, SIZE)
+loadDatasDir <- function(na=8, printdata=F, size=150, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
+   table0 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit0.txt", sep=""))
+   table1 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit1.txt", sep=""))
+   table2 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit2.txt", sep=""))
+   table3 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit3.txt", sep=""))
+   table4 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit4.txt", sep=""))
+   table5 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit5.txt", sep=""))
+   table6 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit6.txt", sep=""))
+   table7 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit7.txt", sep=""))
+   table8 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit8.txt", sep=""))
+   table9 <- Load_Obs(paste("../../data/Dir",na,"/Train_compute_symbol_dir_",na,"Digit9.txt", sep=""))
+
+   id0 <- sample(dim(table0)[1], size)
+   id1 <- sample(dim(table1)[1], size) + dim(table0)[1]
+   id2 <- sample(dim(table2)[1], size) + dim(table0)[1] + dim(table1)[1]
+   id3 <- sample(dim(table3)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1]
+   id4 <- sample(dim(table4)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1]
+   id5 <- sample(dim(table5)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1] + dim(table4)[1]
+   id6 <- sample(dim(table6)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1] + dim(table4)[1] + dim(table5)[1]
+   id7 <- sample(dim(table7)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1] + dim(table4)[1] + dim(table5)[1] + dim(table6)[1]
+   id8 <- sample(dim(table8)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1] + dim(table4)[1] + dim(table5)[1] + dim(table6)[1] + dim(table7)[1]
+   id9 <- sample(dim(table9)[1], size) + dim(table0)[1] + dim(table1)[1] + dim(table2)[1] + dim(table3)[1] + dim(table4)[1] + dim(table5)[1] + dim(table6)[1] + dim(table7)[1] + dim(table8)[1]
+
+   trainId <- sort(c(id0, id1, id2, id3, id4, id5, id6, id7, id8, id9))
+   validId <- -trainId
+
+   targs0 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table0)[1]),
+                              ncol=10, byrow=T))[1:dim(table0)[1],]
+
+   targs1 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table1)[1]),
+                              ncol=10, byrow=T))[(1+dim(table1)[1]):(2*dim(table1)[1]),]
+
+   targs2 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table2)[1])
+                              , ncol=10, byrow=T))[(1+2*dim(table2)[1]):(3*dim(table2)[1]),]
+
+   targs3 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table3)[1])
+                              , ncol=10, byrow=T))[(1+3*dim(table3)[1]):(4*dim(table3)[1]),]
+
+   targs4 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table4)[1])
+                              , ncol=10, byrow=T))[(1+4*dim(table4)[1]):(5*dim(table4)[1]),]
+
+   targs5 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table5)[1])
+                              , ncol=10, byrow=T))[(1+5*dim(table5)[1]):(6*dim(table5)[1]),]
+
+   targs6 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table6)[1])
+                              , ncol=10, byrow=T))[(1+6*dim(table6)[1]):(7*dim(table6)[1]),]
+
+   targs7 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table7)[1])
+                              , ncol=10, byrow=T))[(1+7*dim(table7)[1]):(8*dim(table7)[1]),]
+
+   targs8 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table8)[1])
+                              , ncol=10, byrow=T))[(1+8*dim(table8)[1]):(9*dim(table8)[1]),]
+
+   targs9 <- class.ind(matrix(rep(c(0,1,2,3,4,5,6,7,8,9), dim(table9)[1])
+                              , ncol=10, byrow=T))[(1+9*dim(table9)[1]):(10*dim(table9)[1]),]
+
+   allset <- rbind(table0, table1, table2, table3, table4, table5, table6, table7, table8, table9)
+   alltargs <- rbind(targs0, targs1, targs2, targs3, targs4, targs5, targs6, targs7, targs8, targs9)
+
+   return(list(allDataSet=allset, allTargSet=alltargs, trainId=trainId, validId=validId))
+}
+# }}}
+
 # {{{ CLASSIFY(DATA, NN, DIGIT, SOMME, TOTAL, NR, NC, ...)
 classify <- function(data, nn, digit, somme=0, total=0, nr=5, nc=3, d=T, sl=T, sr=T, st=T, sb=T, mr=T, mc=T) {
    for (i in 1:dim(data)[1]) {
@@ -580,36 +683,69 @@ classify <- function(data, nn, digit, somme=0, total=0, nr=5, nc=3, d=T, sl=T, s
 }
 # }}}
 
-#sim <- simu_symbol()
-#test <- compute_symbol(sim$d6, 30, 20)
-#test
+# {{{ CLASSIFY_DIR(DATA, NN, DIGIT, SOMME, TOTAL, NR, NC, ...)
+classifyDir <- function(data, nn, digit, somme=0, total=0) {
+   for (i in 1:dim(data)[1]) {
+      l <- predict(nn, data[i,])
+      
+      check <- c()
+      if (digit == 0) {
+         check <- c(1,0,0,0,0,0,0,0,0,0)
+      }
+      else if (digit == 1) {
+         check <- c(0,1,0,0,0,0,0,0,0,0)
+      }
+      else if (digit == 2) {
+         check <- c(0,0,1,0,0,0,0,0,0,0)
+      }
+      else if (digit == 3) {
+         check <- c(0,0,0,1,0,0,0,0,0,0)
+      }
+      else if (digit == 4) {
+         check <- c(0,0,0,0,1,0,0,0,0,0)
+      }
+      else if (digit == 5) {
+         check <- c(0,0,0,0,0,1,0,0,0,0)
+      }
+      else if (digit == 6) {
+         check <- c(0,0,0,0,0,0,1,0,0,0)
+      }
+      else if (digit == 7) {
+         check <- c(0,0,0,0,0,0,0,1,0,0)
+      }
+      else if (digit == 8) {
+         check <- c(0,0,0,0,0,0,0,0,1,0)
+      }
+      else if (digit == 9) {
+         check <- c(0,0,0,0,0,0,0,0,0,1)
+      }
+
+      toCheck <- sapply(l, function(x) { ifelse(x==max(l),1,0) })
+      test <- sum(toCheck == check) == 10
+      if(test)
+         somme <- somme + 1
+      total <- total + 1
+   }
+   return(list(somme=somme, total=total))
+}
+# }}}
+
+sim <- simu_symbol()
+test <- compute_symbol(sim$d6, 7,5)
+cat("symboles: ")
+test
 #
-#lut <- constructImg(test, 30, 20)
-#prettyPrintImg(lut)
+lut <- constructImg(test, 7,5)
+prettyPrintImg(lut)
 #
-#test <- matrix(test, nrow=1)
-#features <- createFeatures(test, 30, 20)
-#features
+test <- matrix(test, nrow=1)
+features <- createFeatures(test, 7, 5)
+features
 
 
 
 #testdir <- compute_symbol_dir(sim$d1)
 #testdir
-
-
-
-sets <- loadDatas()
-dataSets <- sets$allDataSet
-targSets <- sets$allTargSet
-
-dim(dataSets)
-dim(targSets)
-
-trainId <- sets$trainId
-validId <- sets$validId
-
-res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
-nndigit <- res$nn
 
 # cross validation
 #meansT <- c()
@@ -626,7 +762,22 @@ nndigit <- res$nn
 #par(fg = "red")
 #plot(tmp, meansT, type = "l")
 
-test <- loadTests()
+if (F) {
+# {{{ TEST 5x3
+sets <- loadDatas()
+dataSets <- sets$allDataSet
+targSets <- sets$allTargSet
+
+dim(dataSets)
+dim(targSets)
+
+trainId <- sets$trainId
+validId <- sets$validId
+
+res <- learn.val(dataSets, targSets, trainId, validId, 21, 100, 50)
+nndigit <- res$nn
+
+test <- loadTests(n="Train")
 
 t0 <- classify(test$t0, nndigit, 0                    )
 t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total)
@@ -638,11 +789,13 @@ t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total)
 t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total)
 t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total)
 t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total)
-cat("\n\nres: ", t9$somme, "/", t9$total, "\n")
-cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
+cat("\n\n\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
+# }}}
 
-
+# {{{ TEST 5x4
 sets <- loadDatas(nr=5, nc=4)
+
 dataSets <- sets$allDataSet
 targSets <- sets$allTargSet
 
@@ -652,10 +805,10 @@ dim(targSets)
 trainId <- sets$trainId
 validId <- sets$validId
 
-res <- learn.val(dataSets, targSets, trainId, validId, 22, 100, 20)
+res <- learn.val(dataSets, targSets, trainId, validId, 17, 100, 50)
 nndigit <- res$nn
 
-test <- loadTests(5,4)
+test <- loadTests(n="Train",5,4)
 t0 <- classify(test$t0, nndigit, 0                    , nr=5, nc=4)
 t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=5, nc=4)
 t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=5, nc=4)
@@ -666,11 +819,13 @@ t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=5, nc=4)
 t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=5, nc=4)
 t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=5, nc=4)
 t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=5, nc=4)
-cat("res: ", t9$somme, "/", t9$total, "\n")
-cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
+cat("\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
+# }}}
 
-
+# {{{ TEST 7x5
 sets <- loadDatas(nr=7, nc=5)
+
 dataSets <- sets$allDataSet
 targSets <- sets$allTargSet
 
@@ -680,10 +835,11 @@ dim(targSets)
 trainId <- sets$trainId
 validId <- sets$validId
 
-res <- learn.val(dataSets, targSets, trainId, validId, 18, 100, 20)
+res <- learn.val(dataSets, targSets, trainId, validId, 11, 100, 50)
 nndigit <- res$nn
+dput(nndigit, file="nndigit.bin")
 
-test <- loadTests(7,5)
+test <- loadTests(n="Train",7,5)
 t0 <- classify(test$t0, nndigit, 0                    , nr=7, nc=5)
 t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=7, nc=5)
 t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=7, nc=5)
@@ -694,5 +850,7 @@ t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=7, nc=5)
 t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=7, nc=5)
 t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=7, nc=5)
 t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=7, nc=5)
-cat("res: ", t9$somme, "/", t9$total, "\n")
-cat("precision: ", (t9$somme/t9$total)*100, "%\n\n\n")
+cat("\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
+cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
+# }}}
+}
