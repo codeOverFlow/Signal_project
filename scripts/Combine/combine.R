@@ -84,7 +84,6 @@ classifySum <- function(hmms, nndigits, obs)
    reshmm <- sapply(reshmm, function(x) { return(x/sumhmm)})
    resnn <- predict(nndigit, createFeatures2(obs, 5, 4))
    res <- resnn + reshmm
-   cat(res)
    return(0)
 }
 
