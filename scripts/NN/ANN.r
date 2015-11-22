@@ -730,17 +730,17 @@ classifyDir <- function(data, nn, digit, somme=0, total=0) {
 }
 # }}}
 
-sim <- simu_symbol()
-test <- compute_symbol(sim$d6, 7,5)
-cat("symboles: ")
-test
-#
-lut <- constructImg(test, 7,5)
-prettyPrintImg(lut)
-#
-test <- matrix(test, nrow=1)
-features <- createFeatures(test, 7, 5)
-features
+#sim <- simu_symbol()
+#test <- compute_symbol(sim$d6, 7,5)
+#cat("symboles: ")
+#test
+##
+#lut <- constructImg(test, 7,5)
+#prettyPrintImg(lut)
+##
+#test <- matrix(test, nrow=1)
+#features <- createFeatures(test, 7, 5)
+#features
 
 
 
@@ -792,7 +792,8 @@ t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total)
 cat("\n\n\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
 cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
 # }}}
-
+}
+if (F) {
 # {{{ TEST 5x4
 sets <- loadDatas(nr=5, nc=4)
 
@@ -807,8 +808,9 @@ validId <- sets$validId
 
 res <- learn.val(dataSets, targSets, trainId, validId, 17, 100, 50)
 nndigit <- res$nn
+dput(nndigit, file="nndigit.bin")
 
-test <- loadTests(n="Train",5,4)
+test <- loadTests(n="Test",5,4)
 t0 <- classify(test$t0, nndigit, 0                    , nr=5, nc=4)
 t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=5, nc=4)
 t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=5, nc=4)
@@ -822,7 +824,8 @@ t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=5, nc=4)
 cat("\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
 cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
 # }}}
-
+}
+if (F) {
 # {{{ TEST 7x5
 sets <- loadDatas(nr=7, nc=5)
 
@@ -837,7 +840,6 @@ validId <- sets$validId
 
 res <- learn.val(dataSets, targSets, trainId, validId, 11, 100, 50)
 nndigit <- res$nn
-dput(nndigit, file="nndigit.bin")
 
 test <- loadTests(n="Train",7,5)
 t0 <- classify(test$t0, nndigit, 0                    , nr=7, nc=5)
