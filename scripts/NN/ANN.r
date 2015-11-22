@@ -793,7 +793,7 @@ cat("\n\n\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
 cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
 # }}}
 }
-if (F) {
+if (T) {
 # {{{ TEST 5x4
 sets <- loadDatas(nr=5, nc=4)
 
@@ -808,21 +808,21 @@ validId <- sets$validId
 
 res <- learn.val(dataSets, targSets, trainId, validId, 17, 100, 50)
 nndigit <- res$nn
-dput(nndigit, file="nndigit.bin")
+#dput(res$nn, "nndigit")
 
 test <- loadTests(n="Test",5,4)
-t0 <- classify(test$t0, nndigit, 0                    , nr=5, nc=4)
-t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=5, nc=4)
-t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=5, nc=4)
-t3 <- classify(test$t3, nndigit, 3, t2$somme, t2$total, nr=5, nc=4)
-t4 <- classify(test$t4, nndigit, 4, t3$somme, t3$total, nr=5, nc=4)
-t5 <- classify(test$t5, nndigit, 5, t4$somme, t4$total, nr=5, nc=4)
-t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=5, nc=4)
-t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=5, nc=4)
-t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=5, nc=4)
-t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=5, nc=4)
-cat("\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
-cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
+#t0 <- classify(test$t0, nndigit, 0                    , nr=5, nc=4)
+#t1 <- classify(test$t1, nndigit, 1, t0$somme, t0$total, nr=5, nc=4)
+#t2 <- classify(test$t2, nndigit, 2, t1$somme, t1$total, nr=5, nc=4)
+#t3 <- classify(test$t3, nndigit, 3, t2$somme, t2$total, nr=5, nc=4)
+#t4 <- classify(test$t4, nndigit, 4, t3$somme, t3$total, nr=5, nc=4)
+#t5 <- classify(test$t5, nndigit, 5, t4$somme, t4$total, nr=5, nc=4)
+#t6 <- classify(test$t6, nndigit, 6, t5$somme, t5$total, nr=5, nc=4)
+#t7 <- classify(test$t7, nndigit, 7, t6$somme, t6$total, nr=5, nc=4)
+#t8 <- classify(test$t8, nndigit, 8, t7$somme, t7$total, nr=5, nc=4)
+#t9 <- classify(test$t9, nndigit, 9, t8$somme, t8$total, nr=5, nc=4)
+#cat("\033[31;1mres: ", t9$somme, "/", t9$total, "\n")
+#cat("precision: ", (t9$somme/t9$total)*100, "%\033[00;0m\n\n\n")
 # }}}
 }
 if (F) {
