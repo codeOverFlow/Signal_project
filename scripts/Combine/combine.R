@@ -46,7 +46,7 @@ loadFiles <- function(type, dir, file)
   return(list(feats=feats, index=indexFile))
 }
 
-computeAllScores <- function(hmms, nndigit, feats, indexFeats, combine)
+computeAllScores <- function(hmms, nndigit, feats, indexFeats, combine="sum")
 {
   scores = c()
   sum = 0
